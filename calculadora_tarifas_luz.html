@@ -393,14 +393,29 @@ function updateName(id, val) {
   if (op) { op.name = val; scheduleSave(); }
 }
 
-// Updates only the result sections in-place — does NOT rebuild price inputs,
-// so the focused input keeps its value and cursor position.
+// Updates result sections in-place and re-sorts DOM nodes — does NOT rebuild
+// price inputs, so the focused input keeps its value and cursor position.
 function updateResults() {
   const c = getConsumption();
   const results = ops.map(op => ({ id: op.id, res: calcTotal(c, op) }));
   const bestId  = results.length ? results.reduce((a, b) => a.res.total < b.res.total ? a : b).id : null;
   const currentOp = ops.find(o => o.current);
   const refVal  = currentOp ? results.find(r => r.id === currentOp.id).res.total : null;
+
+  // Re-sort DOM nodes: current first, rest by ascending total.
+  // Preserve focus: appendChild moves a node, which can fire blur in some browsers.
+  const focused = document.activeElement;
+  const container = document.getElementById('operators-container');
+  const current = ops.filter(o => o.current);
+  const rest    = ops.filter(o => !o.current)
+                     .slice()
+                     .sort((a, b) => results.find(r => r.id === a.id).res.total
+                                   - results.find(r => r.id === b.id).res.total);
+  [...current, ...rest].forEach(op => {
+    const card = document.querySelector(`.operator-card[data-op-id="${op.id}"]`);
+    if (card) container.appendChild(card);
+  });
+  if (focused && focused !== document.activeElement) focused.focus();
 
   ops.forEach(op => {
     const card = document.querySelector(`.operator-card[data-op-id="${op.id}"]`);
