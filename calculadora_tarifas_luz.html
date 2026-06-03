@@ -159,6 +159,16 @@
   .op-total-label { font-size: 12px; color: var(--text-secondary); }
   .op-total-val { font-size: 24px; font-weight: 500; }
   .op-saving { font-size: 12px; margin-top: 2px; text-align: right; }
+  .current-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: var(--radius-md);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
   .best-badge {
     font-size: 11px;
     padding: 3px 10px;
@@ -263,10 +273,10 @@ function calcTotal(c, op) {
 function fmt(n)  { return n.toFixed(2); }
 function fmtE(n) { return n.toFixed(4); }
 
-function addOperator(preset) {
+function addOperator(preset, isCurrent) {
   const id = ++opId;
   const p = preset || { name:'Nueva operadora', ep1:0, ep2:0, ep3:0, pp1:0, pp2:0 };
-  ops.push({ id, ...p });
+  ops.push({ id, current: !!isCurrent, ...p });
   renderOperators();
 }
 
@@ -289,15 +299,23 @@ function renderOperators() {
   const c = getConsumption();
   const results = ops.map(op => ({ id: op.id, res: calcTotal(c, op) }));
   const bestId  = results.length ? results.reduce((a, b) => a.res.total < b.res.total ? a : b).id : null;
-  const refVal  = results.length ? results[0].res.total : null;
+
+  // Current operator first, rest sorted by ascending total
+  const current = ops.filter(o => o.current);
+  const rest    = ops.filter(o => !o.current)
+                     .slice()
+                     .sort((a, b) => results.find(r => r.id === a.id).res.total
+                                   - results.find(r => r.id === b.id).res.total);
+  const sorted  = [...current, ...rest];
+  const refVal  = current.length ? results.find(r => r.id === current[0].id).res.total : null;
 
   const container = document.getElementById('operators-container');
   container.innerHTML = '';
 
-  ops.forEach(op => {
+  sorted.forEach(op => {
     const res    = results.find(r => r.id === op.id).res;
     const isBest = op.id === bestId && ops.length > 1;
-    const diff   = refVal !== null && op.id !== ops[0].id ? res.total - refVal : null;
+    const diff   = refVal !== null && !op.current ? res.total - refVal : null;
 
     const card = document.createElement('div');
     card.className = 'operator-card' + (isBest ? ' best-card' : '');
@@ -306,6 +324,7 @@ function renderOperators() {
       <div class="op-header">
         <input class="op-name-input" type="text" value="${op.name.replace(/"/g,'&quot;')}"
           placeholder="Nombre operadora" oninput="updateName(${op.id}, this.value)">
+        ${op.current ? '<span class="current-badge">Actual</span>' : ''}
         ${isBest ? '<span class="best-badge">Más barata</span>' : ''}
         <button class="del-btn" onclick="removeOperator(${op.id})" title="Eliminar">
           <i class="ti ti-x"></i>
@@ -368,7 +387,7 @@ function renderOperators() {
   document.getElementById(id).addEventListener('input', renderOperators);
 });
 
-PRESETS.forEach(p => addOperator(p));
+PRESETS.forEach((p, i) => addOperator(p, i === 0));
 </script>
 </body>
 </html>
