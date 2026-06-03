@@ -298,6 +298,57 @@ const PRESETS = [
 let ops = [];
 let opId = 0;
 
+// ── Persistence ──────────────────────────────────────────────────────────────
+
+const API = '/proyectos/gestion-luz/api/state';
+let saveTimer;
+
+async function loadState() {
+  try {
+    const r = await fetch(API, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error();
+    const s = await r.json();
+    if (s && s.ops && s.ops.length) {
+      // Restore consumption inputs
+      if (s.consumption) {
+        ['kwh_p1','kwh_p2','kwh_p3','pot_p1','pot_p2','dias'].forEach(k => {
+          if (s.consumption[k] != null) document.getElementById(k).value = s.consumption[k];
+        });
+      }
+      // Restore operators
+      s.ops.forEach(op => {
+        const id = ++opId;
+        ops.push({ ...op, id });
+      });
+      renderOperators();
+      return;
+    }
+  } catch {}
+  // Fallback: load presets
+  PRESETS.forEach((p, i) => addOperator(p, i === 0));
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 1000);
+}
+
+function saveState() {
+  const consumption = {};
+  ['kwh_p1','kwh_p2','kwh_p3','pot_p1','pot_p2','dias'].forEach(k => {
+    consumption[k] = parseFloat(document.getElementById(k).value) || 0;
+  });
+  const payload = { consumption, ops: ops.map(({ id, ...rest }) => rest) };
+  fetch(API, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
+
+// ── Core logic ────────────────────────────────────────────────────────────────
+
 function getConsumption() {
   return {
     kwh_p1: parseFloat(document.getElementById('kwh_p1').value) || 0,
@@ -328,29 +379,95 @@ function addOperator(preset, isCurrent) {
   const p = preset || { name:'Nueva operadora', ep1:0, ep2:0, ep3:0, pp1:0, pp2:0 };
   ops.push({ id, current: !!isCurrent, ...p });
   renderOperators();
+  scheduleSave();
 }
 
 function removeOperator(id) {
   ops = ops.filter(o => o.id !== id);
   renderOperators();
+  scheduleSave();
 }
 
 function updateName(id, val) {
   const op = ops.find(o => o.id === id);
-  if (op) op.name = val;
+  if (op) { op.name = val; scheduleSave(); }
+}
+
+// Updates only the result sections in-place — does NOT rebuild price inputs,
+// so the focused input keeps its value and cursor position.
+function updateResults() {
+  const c = getConsumption();
+  const results = ops.map(op => ({ id: op.id, res: calcTotal(c, op) }));
+  const bestId  = results.length ? results.reduce((a, b) => a.res.total < b.res.total ? a : b).id : null;
+  const currentOp = ops.find(o => o.current);
+  const refVal  = currentOp ? results.find(r => r.id === currentOp.id).res.total : null;
+
+  ops.forEach(op => {
+    const card = document.querySelector(`.operator-card[data-op-id="${op.id}"]`);
+    if (!card) return;
+    const res    = results.find(r => r.id === op.id).res;
+    const isBest = op.id === bestId && ops.length > 1;
+    const diff   = refVal !== null && !op.current ? res.total - refVal : null;
+
+    card.className = 'operator-card' + (isBest ? ' best-card' : '');
+
+    // Badge "Más barata"
+    let badge = card.querySelector('.best-badge');
+    if (isBest && !badge) {
+      badge = document.createElement('span');
+      badge.className = 'best-badge';
+      badge.textContent = 'Más barata';
+      card.querySelector('.op-header').insertBefore(badge, card.querySelector('.del-btn'));
+    } else if (!isBest && badge) {
+      badge.remove();
+    }
+
+    // Detail breakdown
+    card.querySelector('.op-detail').innerHTML = `
+      <span class="detail-block">P1 ${fmt(res.e_p1)} €</span>
+      <span class="detail-block">+ P2 ${fmt(res.e_p2)} €</span>
+      <span class="detail-block">+ P3 ${fmt(res.e_p3)} €</span>
+      <span class="detail-block">= <strong>${fmt(res.energia)} €</strong></span>
+      &nbsp;&nbsp;
+      <span class="detail-block">Pot P1 ${fmt(res.pot1)} €</span>
+      <span class="detail-block">+ P2 ${fmt(res.pot2)} €</span>
+      <span class="detail-block">= <strong>${fmt(res.potencia)} €</strong></span>`;
+
+    // Total
+    const totalVal = card.querySelector('.op-total-val');
+    totalVal.textContent = fmt(res.total) + ' €';
+    totalVal.style.color = isBest ? 'var(--best-total)' : 'var(--text-primary)';
+
+    // Savings vs. primera
+    let savingEl = card.querySelector('.op-saving');
+    if (diff !== null) {
+      if (!savingEl) {
+        savingEl = document.createElement('div');
+        savingEl.className = 'op-saving';
+        totalVal.parentElement.appendChild(savingEl);
+      }
+      savingEl.style.color = diff > 0 ? 'var(--red-text)' : 'var(--green-text)';
+      savingEl.textContent = (diff > 0 ? '▲ +' : '▼ ') + fmt(diff) + ' € vs. primera';
+    } else if (savingEl) {
+      savingEl.remove();
+    }
+  });
 }
 
 function updatePrice(id, field, val) {
   const op = ops.find(o => o.id === id);
-  if (op) { op[field] = parseFloat(val) || 0; renderOperators(); }
+  if (!op) return;
+  op[field] = parseFloat(val) || 0;
+  updateResults(); // in-place — preserves focus and cursor
+  scheduleSave();
 }
 
+// Full DOM rebuild — called on add / remove / consumption change
 function renderOperators() {
   const c = getConsumption();
   const results = ops.map(op => ({ id: op.id, res: calcTotal(c, op) }));
   const bestId  = results.length ? results.reduce((a, b) => a.res.total < b.res.total ? a : b).id : null;
 
-  // Current operator first, rest sorted by ascending total
   const current = ops.filter(o => o.current);
   const rest    = ops.filter(o => !o.current)
                      .slice()
@@ -369,6 +486,7 @@ function renderOperators() {
 
     const card = document.createElement('div');
     card.className = 'operator-card' + (isBest ? ' best-card' : '');
+    card.dataset.opId = op.id;
 
     card.innerHTML = `
       <div class="op-header">
@@ -434,10 +552,14 @@ function renderOperators() {
 }
 
 ['kwh_p1','kwh_p2','kwh_p3','pot_p1','pot_p2','dias'].forEach(id => {
-  document.getElementById(id).addEventListener('input', renderOperators);
+  document.getElementById(id).addEventListener('input', () => {
+    renderOperators();
+    scheduleSave();
+  });
 });
 
-// Theme toggle
+// ── Theme ─────────────────────────────────────────────────────────────────────
+
 (function() {
   const stored = localStorage.getItem('theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -460,7 +582,9 @@ function toggleTheme() {
   updateThemeIcon(isDark);
 }
 
-PRESETS.forEach((p, i) => addOperator(p, i === 0));
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+loadState();
 </script>
 </body>
 </html>
