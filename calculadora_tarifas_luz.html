@@ -23,9 +23,29 @@
     --blue-text: #0C447C;
     --green-text: #3B6D11;
     --red-text: #A32D2D;
+    --best-bg: #EAF7EE;
+    --best-border: #4CAF50;
+    --best-total: #2D7A36;
+  }
+  html.dark {
+    --bg-primary: #1e1e1c;
+    --bg-secondary: #2a2a28;
+    --bg-tertiary: #333330;
+    --text-primary: #f0f0ec;
+    --text-secondary: #a0a09a;
+    --text-tertiary: #6a6a64;
+    --border-light: rgba(255,255,255,0.10);
+    --border-mid: rgba(255,255,255,0.20);
+    --blue-bg: #0c2f52;
+    --blue-text: #85B7EB;
+    --green-text: #97C459;
+    --red-text: #F09595;
+    --best-bg: #1a3320;
+    --best-border: #4CAF50;
+    --best-total: #7ecb87;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    html:not(.light) {
       --bg-primary: #1e1e1c;
       --bg-secondary: #2a2a28;
       --bg-tertiary: #333330;
@@ -38,6 +58,9 @@
       --blue-text: #85B7EB;
       --green-text: #97C459;
       --red-text: #F09595;
+      --best-bg: #1a3320;
+      --best-border: #4CAF50;
+      --best-total: #7ecb87;
     }
   }
   body {
@@ -48,7 +71,22 @@
     padding: 1rem;
     min-height: 100vh;
   }
-  h1 { font-size: 18px; font-weight: 500; margin-bottom: 1rem; }
+  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  h1 { font-size: 18px; font-weight: 500; }
+  .theme-btn {
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border-mid);
+    border-radius: var(--radius-md);
+    padding: 7px 10px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+  }
+  .theme-btn:active { background: var(--bg-tertiary); }
   .card {
     background: var(--bg-primary);
     border: 0.5px solid var(--border-light);
@@ -88,7 +126,12 @@
     padding: 0.875rem 1rem;
     margin-bottom: 10px;
   }
-  .operator-card.best-card { border: 2px solid var(--blue); }
+  .operator-card.best-card {
+    background: var(--best-bg);
+    border: 1.5px solid var(--best-border);
+  }
+  .operator-card.best-card .op-name-input { background: transparent; }
+  .operator-card.best-card .subfield input { background: var(--bg-primary); }
   .op-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
   .op-name-input {
     flex: 1;
@@ -208,7 +251,12 @@
 </head>
 <body>
 
-<h1>Comparador de tarifas eléctricas</h1>
+<div class="top-bar">
+  <h1>Comparador de tarifas eléctricas</h1>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Cambiar modo">
+    <i class="ti ti-moon" id="theme-icon"></i>
+  </button>
+</div>
 
 <div class="card">
   <div class="section-label">Consumo del periodo (kWh)</div>
@@ -368,7 +416,7 @@ function renderOperators() {
       <div class="op-total">
         <span class="op-total-label">Total estimado</span>
         <div style="text-align:right;">
-          <div class="op-total-val" style="color:${isBest ? 'var(--blue)' : 'var(--text-primary)'}">
+          <div class="op-total-val" style="color:${isBest ? 'var(--best-total)' : 'var(--text-primary)'}">
             ${fmt(res.total)} €
           </div>
           ${diff !== null
@@ -386,6 +434,29 @@ function renderOperators() {
 ['kwh_p1','kwh_p2','kwh_p3','pot_p1','pot_p2','dias'].forEach(id => {
   document.getElementById(id).addEventListener('input', renderOperators);
 });
+
+// Theme toggle
+(function() {
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = stored ? stored === 'dark' : prefersDark;
+  if (isDark) document.documentElement.classList.add('dark');
+  else document.documentElement.classList.add('light');
+  updateThemeIcon(isDark);
+})();
+
+function updateThemeIcon(isDark) {
+  const icon = document.getElementById('theme-icon');
+  if (!icon) return;
+  icon.className = isDark ? 'ti ti-sun' : 'ti ti-moon';
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  document.documentElement.classList.toggle('light', !isDark);
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  updateThemeIcon(isDark);
+}
 
 PRESETS.forEach((p, i) => addOperator(p, i === 0));
 </script>
