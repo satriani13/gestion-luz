@@ -2,303 +2,438 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comparador de tarifas eléctricas</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tarifas Luz</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f5f5f0;
-    --bg-tertiary: #ededea;
-    --text-primary: #1a1a18;
-    --text-secondary: #6b6b66;
-    --text-tertiary: #9a9a94;
-    --border-light: rgba(0,0,0,0.12);
-    --border-mid: rgba(0,0,0,0.22);
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --blue: #185FA5;
-    --blue-bg: #E6F1FB;
-    --blue-text: #0C447C;
-    --green-text: #3B6D11;
-    --red-text: #A32D2D;
-    --best-bg: #EAF7EE;
-    --best-border: #4CAF50;
-    --best-total: #2D7A36;
-  }
-  html.dark {
-    --bg-primary: #1e1e1c;
-    --bg-secondary: #2a2a28;
-    --bg-tertiary: #333330;
-    --text-primary: #f0f0ec;
-    --text-secondary: #a0a09a;
-    --text-tertiary: #6a6a64;
-    --border-light: rgba(255,255,255,0.10);
-    --border-mid: rgba(255,255,255,0.20);
-    --blue-bg: #0c2f52;
-    --blue-text: #85B7EB;
-    --green-text: #97C459;
-    --red-text: #F09595;
-    --best-bg: #1a3320;
-    --best-border: #4CAF50;
-    --best-total: #7ecb87;
-  }
-  @media (prefers-color-scheme: dark) {
-    html:not(.light) {
-      --bg-primary: #1e1e1c;
-      --bg-secondary: #2a2a28;
-      --bg-tertiary: #333330;
-      --text-primary: #f0f0ec;
-      --text-secondary: #a0a09a;
-      --text-tertiary: #6a6a64;
-      --border-light: rgba(255,255,255,0.10);
-      --border-mid: rgba(255,255,255,0.20);
-      --blue-bg: #0c2f52;
-      --blue-text: #85B7EB;
-      --green-text: #97C459;
-      --red-text: #F09595;
-      --best-bg: #1a3320;
-      --best-border: #4CAF50;
-      --best-total: #7ecb87;
-    }
-  }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 14px;
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    padding: 1rem;
-    min-height: 100vh;
-  }
-  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  h1 { font-size: 18px; font-weight: 500; }
-  .theme-btn {
-    background: var(--bg-secondary);
-    border: 0.5px solid var(--border-mid);
-    border-radius: var(--radius-md);
-    padding: 7px 10px;
-    cursor: pointer;
-    color: var(--text-secondary);
-    font-size: 18px;
-    line-height: 1;
-    flex-shrink: 0;
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.15s;
-  }
-  .theme-btn:active { background: var(--bg-tertiary); }
-  .card {
-    background: var(--bg-secondary);
-    border: 0.5px solid var(--border-light);
-    border-left: 3px solid var(--blue);
-    border-radius: var(--radius-lg);
-    padding: 1rem;
-    margin-bottom: 0.75rem;
-  }
-  .card .field input { background: var(--bg-primary); }
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 10px;
-  }
-  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  @media (max-width: 480px) { .grid3 { grid-template-columns: 1fr 1fr; } }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 12px; color: var(--text-secondary); }
-  .field input {
-    width: 100%;
-    padding: 9px 10px;
-    font-size: 14px;
-    border: 0.5px solid var(--border-mid);
-    border-radius: var(--radius-md);
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    -webkit-appearance: none;
-  }
-  .field input:focus { outline: none; border-color: var(--blue); }
-  .note { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; line-height: 1.5; }
-  .sep { height: 0.5px; background: var(--border-light); margin: 1rem 0; }
-  .operator-card {
-    background: var(--bg-primary);
-    border: 0.5px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    padding: 0.875rem 1rem;
-    margin-bottom: 10px;
-  }
-  .operator-card.best-card {
-    background: var(--best-bg);
-    border: 1.5px solid var(--best-border);
-  }
-  .operator-card.best-card .op-name-input { background: transparent; }
-  .operator-card.best-card .subfield input { background: var(--bg-primary); }
-  .op-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .op-name-input {
-    flex: 1;
-    padding: 9px 10px;
-    font-size: 14px;
-    font-weight: 500;
-    border: 0.5px solid var(--border-mid);
-    border-radius: var(--radius-md);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    -webkit-appearance: none;
-    min-width: 0;
-  }
-  .op-name-input:focus { outline: none; border-color: var(--blue); }
-  .del-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-secondary);
-    font-size: 20px;
-    padding: 6px 8px;
-    border-radius: var(--radius-md);
-    line-height: 1;
-    flex-shrink: 0;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .del-btn:active { background: #FCEBEB; color: var(--red-text); }
-  @media (hover: hover) { .del-btn:hover { background: #FCEBEB; color: var(--red-text); } }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Energía: 3 cols siempre; potencia: 2 cols, en fila separada */
-  .prices-energy { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .prices-power  { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
+:root {
+  --bg:       #0f0f11;
+  --bg2:      #18181c;
+  --bg3:      #222228;
+  --surface:  #26262e;
+  --line:     rgba(255,255,255,0.08);
+  --line2:    rgba(255,255,255,0.14);
+  --txt:      #f0f0ec;
+  --txt2:     #8a8a94;
+  --txt3:     #55555f;
+  --accent:   #7c6dfa;
+  --accent2:  #a99dfc;
+  --green:    #4ade80;
+  --red:      #f87171;
+  --amber:    #fbbf24;
+  --radius:   14px;
+  --radius-sm:9px;
+}
 
-  .subfield { display: flex; flex-direction: column; gap: 3px; }
-  .subfield label { font-size: 11px; color: var(--text-tertiary); }
-  .subfield input {
-    padding: 7px 8px;
-    font-size: 13px;
-    border: 0.5px solid var(--border-light);
-    border-radius: var(--radius-md);
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    width: 100%;
-    -webkit-appearance: none;
-  }
-  .subfield input:focus { outline: none; border-color: var(--blue); }
+html { background: var(--bg); }
 
-  /* Desglose en líneas separadas en móvil */
-  .op-detail {
-    font-size: 11px;
-    color: var(--text-tertiary);
-    margin-top: 10px;
-    line-height: 1.9;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px 6px;
-  }
-  .op-detail .detail-block { white-space: nowrap; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 0 0 120px;
+}
 
-  .op-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 0.5px solid var(--border-light);
-  }
-  .op-total-label { font-size: 12px; color: var(--text-secondary); }
-  .op-total-val { font-size: 24px; font-weight: 500; }
-  .op-saving { font-size: 12px; margin-top: 2px; text-align: right; }
-  .current-badge {
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: var(--radius-md);
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    font-weight: 500;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .best-badge {
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: var(--radius-md);
-    background: var(--blue-bg);
-    color: var(--blue-text);
-    font-weight: 500;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .add-btn {
-    width: 100%;
-    padding: 13px;
-    border: 0.5px dashed var(--border-mid);
-    border-radius: var(--radius-lg);
-    background: none;
-    color: var(--text-secondary);
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .add-btn:active { background: var(--bg-secondary); }
-  @media (hover: hover) { .add-btn:hover { background: var(--bg-secondary); } }
-  .sublabel {
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin: 10px 0 5px;
-  }
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15,15,17,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 16px 20px 12px;
+  border-bottom: 0.5px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+.header-sub { font-size: 12px; color: var(--txt2); margin-top: 1px; }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s;
+  background: var(--bg3);
+  color: var(--txt2);
+}
+.tab.active { background: var(--accent); color: #fff; }
+
+/* ── Section ── */
+.section { display: none; padding: 0 16px; }
+.section.visible { display: block; }
+
+/* ── Card ── */
+.card {
+  background: var(--bg2);
+  border: 0.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--txt3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+/* ── Input row ── */
+.input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 0.5px solid var(--line);
+}
+.input-row:last-child { border-bottom: none; }
+.input-label { font-size: 14px; color: var(--txt); }
+.input-label small { display: block; font-size: 11px; color: var(--txt2); margin-top: 1px; }
+.input-val {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.input-val input {
+  width: 80px;
+  text-align: right;
+  padding: 6px 8px;
+  font-size: 15px;
+  font-weight: 500;
+  background: var(--bg3);
+  border: 0.5px solid var(--line2);
+  border-radius: var(--radius-sm);
+  color: var(--txt);
+  -webkit-appearance: none;
+}
+.input-val input:focus { outline: none; border-color: var(--accent); }
+.input-unit { font-size: 12px; color: var(--txt2); min-width: 30px; }
+
+/* ── Operator cards ── */
+.op-card {
+  background: var(--bg2);
+  border: 0.5px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.op-card.best { border-color: var(--accent); border-width: 1.5px; }
+
+.op-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  border-bottom: 0.5px solid var(--line);
+}
+.op-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--txt2);
+  flex-shrink: 0;
+}
+.op-card.best .op-number { background: var(--accent); color: #fff; }
+.op-name-input {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  color: var(--txt);
+  min-width: 0;
+}
+.op-name-input:focus { outline: none; }
+.op-name-input::placeholder { color: var(--txt3); }
+.best-pill {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(124,109,250,0.18);
+  color: var(--accent2);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.current-pill {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.07);
+  color: var(--txt2);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--txt3);
+  font-size: 20px;
+  line-height: 1;
+  padding: 2px;
+  flex-shrink: 0;
+}
+.del-btn:active { color: var(--red); }
+
+/* ── Price grid ── */
+.price-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--txt3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 10px 16px 6px;
+}
+.price-row {
+  display: flex;
+  align-items: center;
+  padding: 9px 16px;
+  border-bottom: 0.5px solid var(--line);
+}
+.price-row:last-child { border-bottom: none; }
+.price-period {
+  font-size: 13px;
+  color: var(--txt2);
+  width: 60px;
+  flex-shrink: 0;
+}
+.price-period span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.price-input-wrap { flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.price-input-wrap input {
+  width: 76px;
+  text-align: right;
+  padding: 5px 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--bg3);
+  border: 0.5px solid var(--line2);
+  border-radius: var(--radius-sm);
+  color: var(--txt);
+  -webkit-appearance: none;
+}
+.price-input-wrap input:focus { outline: none; border-color: var(--accent); }
+.price-unit { font-size: 11px; color: var(--txt3); min-width: 58px; }
+
+/* ── Total bar ── */
+.op-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg3);
+  border-top: 0.5px solid var(--line2);
+}
+.op-total-left { font-size: 12px; color: var(--txt2); }
+.op-total-left .detail { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+.op-total-right { text-align: right; }
+.op-total-val { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+.op-card.best .op-total-val { color: var(--accent2); }
+.op-diff { font-size: 12px; font-weight: 500; margin-top: 1px; }
+.op-diff.pos { color: var(--green); }
+.op-diff.neg { color: var(--red); }
+
+/* ── Resumen ── */
+.summary-card {
+  background: var(--bg2);
+  border: 0.5px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 0.5px solid var(--line);
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-name { font-size: 14px; font-weight: 500; }
+.summary-name small { display: block; font-size: 11px; color: var(--txt2); margin-top: 2px; font-weight: 400; }
+.summary-right { text-align: right; }
+.summary-total { font-size: 18px; font-weight: 600; }
+.summary-diff { font-size: 11px; font-weight: 500; margin-top: 2px; }
+.rank-dot {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Add button ── */
+.add-btn {
+  width: 100%;
+  padding: 14px;
+  border: 0.5px dashed var(--line2);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--txt2);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.add-btn:active { background: var(--bg3); }
+
+/* ── Empty state ── */
+.empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--txt3);
+}
+.empty-icon { font-size: 36px; margin-bottom: 12px; }
+.empty-text { font-size: 14px; }
+
+/* ── Badge consumption ── */
+.cons-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.cons-badge {
+  flex: 1;
+  min-width: 80px;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  text-align: center;
+}
+.cons-badge .cb-val { font-size: 16px; font-weight: 600; }
+.cons-badge .cb-label { font-size: 10px; color: var(--txt2); margin-top: 2px; }
+.cons-badge .cb-pct { font-size: 11px; font-weight: 500; margin-top: 1px; }
+.pct-p1 { color: #f87171; }
+.pct-p2 { color: #fbbf24; }
+.pct-p3 { color: #4ade80; }
 </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <h1>Comparador de tarifas eléctricas</h1>
-  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Cambiar modo">
-    <i class="ti ti-moon" id="theme-icon"></i>
-  </button>
-</div>
-
-<div class="card">
-  <div class="section-label">Consumo del periodo (kWh)</div>
-  <div class="grid3">
-    <div class="field"><label>Punta (P1)</label><input type="number" id="kwh_p1" value="80.87" step="0.01" min="0" inputmode="decimal"></div>
-    <div class="field"><label>Llano (P2)</label><input type="number" id="kwh_p2" value="90.89" step="0.01" min="0" inputmode="decimal"></div>
-    <div class="field"><label>Valle (P3)</label><input type="number" id="kwh_p3" value="513.75" step="0.01" min="0" inputmode="decimal"></div>
+<div class="header">
+  <div>
+    <div class="header-title">⚡ Tarifas Luz</div>
+    <div class="header-sub">Comparador de operadoras</div>
   </div>
 </div>
 
-<div class="card">
-  <div class="section-label">Potencia contratada y días</div>
-  <div class="grid3">
-    <div class="field"><label>Potencia P1 (kW)</label><input type="number" id="pot_p1" value="5.5" step="0.01" min="0" inputmode="decimal"></div>
-    <div class="field"><label>Potencia P2 (kW)</label><input type="number" id="pot_p2" value="5.5" step="0.01" min="0" inputmode="decimal"></div>
-    <div class="field"><label>Días del periodo</label><input type="number" id="dias" value="30" step="1" min="1" inputmode="numeric"></div>
-  </div>
-  <p class="note">Si la tarifa usa una sola potencia para ambos periodos, introduce el mismo valor en P1 y P2.</p>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('tab-consumo', this)">Consumo</button>
+  <button class="tab" onclick="showTab('tab-operadoras', this)">Operadoras</button>
+  <button class="tab" onclick="showTab('tab-resumen', this)">Resumen</button>
 </div>
 
-<div class="sep"></div>
+<!-- ══ TAB CONSUMO ══ -->
+<div class="section visible" id="tab-consumo">
 
-<div id="operators-container"></div>
-<button class="add-btn" onclick="addOperator()">
-  <i class="ti ti-plus"></i> Añadir operadora
-</button>
+  <div class="card">
+    <div class="card-title">Energía consumida</div>
+    <div class="input-row">
+      <div class="input-label">Punta <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f87171;margin-left:4px;vertical-align:middle;"></span><small>P1 · días laborables 10h–22h</small></div>
+      <div class="input-val"><input type="number" id="kwh_p1" value="80.87" step="0.01" min="0" inputmode="decimal" oninput="onConsumptionChange()"><span class="input-unit">kWh</span></div>
+    </div>
+    <div class="input-row">
+      <div class="input-label">Llano <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#fbbf24;margin-left:4px;vertical-align:middle;"></span><small>P2 · días laborables resto</small></div>
+      <div class="input-val"><input type="number" id="kwh_p2" value="90.89" step="0.01" min="0" inputmode="decimal" oninput="onConsumptionChange()"><span class="input-unit">kWh</span></div>
+    </div>
+    <div class="input-row">
+      <div class="input-label">Valle <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-left:4px;vertical-align:middle;"></span><small>P3 · noche y fin de semana</small></div>
+      <div class="input-val"><input type="number" id="kwh_p3" value="513.75" step="0.01" min="0" inputmode="decimal" oninput="onConsumptionChange()"><span class="input-unit">kWh</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Potencia contratada y periodo</div>
+    <div class="input-row">
+      <div class="input-label">Potencia P1<small>Punta</small></div>
+      <div class="input-val"><input type="number" id="pot_p1" value="5.5" step="0.01" min="0" inputmode="decimal" oninput="onConsumptionChange()"><span class="input-unit">kW</span></div>
+    </div>
+    <div class="input-row">
+      <div class="input-label">Potencia P2<small>Valle</small></div>
+      <div class="input-val"><input type="number" id="pot_p2" value="5.5" step="0.01" min="0" inputmode="decimal" oninput="onConsumptionChange()"><span class="input-unit">kW</span></div>
+    </div>
+    <div class="input-row">
+      <div class="input-label">Días del periodo</div>
+      <div class="input-val"><input type="number" id="dias" value="30" step="1" min="1" inputmode="numeric" oninput="onConsumptionChange()"><span class="input-unit">días</span></div>
+    </div>
+  </div>
+
+  <div class="card" id="cons-summary-card">
+    <div class="card-title">Distribución del consumo</div>
+    <div class="cons-badges" id="cons-badges"></div>
+  </div>
+
+</div>
+
+<!-- ══ TAB OPERADORAS ══ -->
+<div class="section" id="tab-operadoras">
+  <div id="operators-container"></div>
+  <button class="add-btn" onclick="addOperator()">＋ Añadir operadora</button>
+</div>
+
+<!-- ══ TAB RESUMEN ══ -->
+<div class="section" id="tab-resumen">
+  <div id="summary-container"></div>
+</div>
 
 <script>
 const PRESETS = [
-  {name:'Octopus 3 (actual)',           ep1:0.193,  ep2:0.107,  ep3:0.088,  pp1:0.0930, pp2:0.0930},
-  {name:'Octopus 3 (renovación jul-26)',ep1:0.212,  ep2:0.133,  ep3:0.127,  pp1:0.0900, pp2:0.0900},
-  {name:'Naturgy — Tarifa Noche',        ep1:0.1822, ep2:0.1092, ep3:0.0739, pp1:0.1230, pp2:0.0616},
-  {name:'Imagina — Plan Noche y Findes', ep1:0.225,  ep2:0.132,  ep3:0.088,  pp1:0.1290, pp2:0.0280},
-  {name:'Gana Energía — Tramos Horarios',ep1:0.171,  ep2:0.104,  ep3:0.080,  pp1:0.0894, pp2:0.0894},
+  {name:'Octopus 3 (actual)',            ep1:0.193,  ep2:0.107,  ep3:0.088,  pp1:0.0930, pp2:0.0930},
+  {name:'Octopus 3 (renovación jul-26)', ep1:0.212,  ep2:0.133,  ep3:0.127,  pp1:0.0900, pp2:0.0900},
+  {name:'Naturgy — Tarifa Noche',         ep1:0.1822, ep2:0.1092, ep3:0.0739, pp1:0.1230, pp2:0.0616},
+  {name:'Imagina — Plan Noche y Findes',  ep1:0.225,  ep2:0.132,  ep3:0.088,  pp1:0.1290, pp2:0.0280},
+  {name:'Gana Energía — Tramos Horarios', ep1:0.171,  ep2:0.104,  ep3:0.080,  pp1:0.0894, pp2:0.0894},
 ];
 
-let ops = [];
-let opId = 0;
+let ops = [], opId = 0;
 
-// ── Persistence ──────────────────────────────────────────────────────────────
+// ── Persistence ───────────────────────────────────────────────────────────────
 
 const API = '/proyectos/gestion-luz/api/state';
 let saveTimer;
@@ -309,292 +444,373 @@ async function loadState() {
     if (!r.ok) throw new Error();
     const s = await r.json();
     if (s && s.ops && s.ops.length) {
-      // Restore consumption inputs
       if (s.consumption) {
         ['kwh_p1','kwh_p2','kwh_p3','pot_p1','pot_p2','dias'].forEach(k => {
           if (s.consumption[k] != null) document.getElementById(k).value = s.consumption[k];
         });
       }
-      // Restore operators
       s.ops.forEach(op => {
         const id = ++opId;
         ops.push({ ...op, id });
       });
-      renderOperators();
+      renderAll();
       return;
     }
   } catch {}
-  // Fallback: load presets
   PRESETS.forEach((p, i) => addOperator(p, i === 0));
 }
 
 function scheduleSave() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveState, 1000);
+  saveTimer = setTimeout(() => {
+    const consumption = {};
+    ['kwh_p1','kwh_p2','kwh_p3','pot_p1','pot_p2','dias'].forEach(k => {
+      consumption[k] = parseFloat(document.getElementById(k).value) || 0;
+    });
+    fetch(API, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ consumption, ops: ops.map(({ id, ...rest }) => rest) }),
+    }).catch(() => {});
+  }, 1000);
 }
 
-function saveState() {
-  const consumption = {};
-  ['kwh_p1','kwh_p2','kwh_p3','pot_p1','pot_p2','dias'].forEach(k => {
-    consumption[k] = parseFloat(document.getElementById(k).value) || 0;
-  });
-  const payload = { consumption, ops: ops.map(({ id, ...rest }) => rest) };
-  fetch(API, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }).catch(() => {});
+// ── Core ──────────────────────────────────────────────────────────────────────
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  btn.classList.add('active');
 }
 
-// ── Core logic ────────────────────────────────────────────────────────────────
-
-function getConsumption() {
+function getC() {
   return {
-    kwh_p1: parseFloat(document.getElementById('kwh_p1').value) || 0,
-    kwh_p2: parseFloat(document.getElementById('kwh_p2').value) || 0,
-    kwh_p3: parseFloat(document.getElementById('kwh_p3').value) || 0,
-    pot_p1: parseFloat(document.getElementById('pot_p1').value) || 0,
-    pot_p2: parseFloat(document.getElementById('pot_p2').value) || 0,
-    dias:   parseFloat(document.getElementById('dias').value)   || 30,
+    kwh_p1: +document.getElementById('kwh_p1').value || 0,
+    kwh_p2: +document.getElementById('kwh_p2').value || 0,
+    kwh_p3: +document.getElementById('kwh_p3').value || 0,
+    pot_p1: +document.getElementById('pot_p1').value || 0,
+    pot_p2: +document.getElementById('pot_p2').value || 0,
+    dias:   +document.getElementById('dias').value   || 30,
   };
 }
 
-function calcTotal(c, op) {
-  const e_p1 = c.kwh_p1 * op.ep1;
-  const e_p2 = c.kwh_p2 * op.ep2;
-  const e_p3 = c.kwh_p3 * op.ep3;
-  const pot1 = c.pot_p1 * op.pp1 * c.dias;
-  const pot2 = c.pot_p2 * op.pp2 * c.dias;
-  const energia  = e_p1 + e_p2 + e_p3;
-  const potencia = pot1 + pot2;
-  return { total: energia + potencia, energia, potencia, e_p1, e_p2, e_p3, pot1, pot2 };
+function calc(c, op) {
+  const e1 = c.kwh_p1*op.ep1, e2 = c.kwh_p2*op.ep2, e3 = c.kwh_p3*op.ep3;
+  const p1 = c.pot_p1*op.pp1*c.dias, p2 = c.pot_p2*op.pp2*c.dias;
+  const energia = e1+e2+e3, potencia = p1+p2;
+  return {total: energia+potencia, energia, potencia, e1, e2, e3, p1, p2};
 }
 
-function fmt(n)  { return n.toFixed(2); }
-function fmtE(n) { return n.toFixed(4); }
+function f2(n) { return n.toFixed(2); }
+function f4(n) { return n.toFixed(4); }
+
+// ── Operator management ───────────────────────────────────────────────────────
 
 function addOperator(preset, isCurrent) {
   const id = ++opId;
-  const p = preset || { name:'Nueva operadora', ep1:0, ep2:0, ep3:0, pp1:0, pp2:0 };
-  ops.push({ id, current: !!isCurrent, ...p });
-  renderOperators();
+  const p = preset || {name:'Nueva operadora', ep1:0, ep2:0, ep3:0, pp1:0, pp2:0};
+  ops.push({id, current: !!isCurrent, ...p});
+  renderAll();
   scheduleSave();
 }
 
 function removeOperator(id) {
   ops = ops.filter(o => o.id !== id);
-  renderOperators();
+  renderAll();
   scheduleSave();
 }
 
 function updateName(id, val) {
-  const op = ops.find(o => o.id === id);
-  if (op) { op.name = val; scheduleSave(); }
+  const o = ops.find(o => o.id === id);
+  if (o) { o.name = val; scheduleSave(); }
 }
 
-// Updates result sections in-place and re-sorts DOM nodes — does NOT rebuild
-// price inputs, so the focused input keeps its value and cursor position.
-function updateResults() {
-  const c = getConsumption();
-  const results = ops.map(op => ({ id: op.id, res: calcTotal(c, op) }));
-  const bestId  = results.length ? results.reduce((a, b) => a.res.total < b.res.total ? a : b).id : null;
-  const currentOp = ops.find(o => o.current);
-  const refVal  = currentOp ? results.find(r => r.id === currentOp.id).res.total : null;
+// Updates price in data model, then refreshes results in-place (preserves focus)
+function updatePrice(id, field, val) {
+  const o = ops.find(o => o.id === id);
+  if (!o) return;
+  o[field] = parseFloat(val) || 0;
+  updateResults();
+  renderSummary();
+  scheduleSave();
+}
 
-  // Re-sort DOM nodes: current first, rest by ascending total.
-  // Preserve focus: appendChild moves a node, which can fire blur in some browsers.
-  const focused = document.activeElement;
-  const container = document.getElementById('operators-container');
+// Consumption changed: full rebuild (no price input focused at this point)
+function onConsumptionChange() {
+  renderConsumptionSummary();
+  renderOperators();
+  renderSummary();
+  scheduleSave();
+}
+
+function renderAll() {
+  renderConsumptionSummary();
+  renderOperators();
+  renderSummary();
+}
+
+// ── Consumption summary ───────────────────────────────────────────────────────
+
+function renderConsumptionSummary() {
+  const c = getC();
+  const total = c.kwh_p1 + c.kwh_p2 + c.kwh_p3;
+  const pct = total > 0
+    ? [c.kwh_p1/total*100, c.kwh_p2/total*100, c.kwh_p3/total*100]
+    : [0,0,0];
+  document.getElementById('cons-badges').innerHTML = `
+    <div class="cons-badge">
+      <div class="cb-val">${f2(c.kwh_p1)}</div>
+      <div class="cb-label">Punta P1</div>
+      <div class="cb-pct pct-p1">${pct[0].toFixed(0)}%</div>
+    </div>
+    <div class="cons-badge">
+      <div class="cb-val">${f2(c.kwh_p2)}</div>
+      <div class="cb-label">Llano P2</div>
+      <div class="cb-pct pct-p2">${pct[1].toFixed(0)}%</div>
+    </div>
+    <div class="cons-badge">
+      <div class="cb-val">${f2(c.kwh_p3)}</div>
+      <div class="cb-label">Valle P3</div>
+      <div class="cb-pct pct-p3">${pct[2].toFixed(0)}%</div>
+    </div>
+  `;
+}
+
+// ── Operators: full rebuild ───────────────────────────────────────────────────
+
+function sortedOps(results) {
   const current = ops.filter(o => o.current);
   const rest    = ops.filter(o => !o.current)
                      .slice()
                      .sort((a, b) => results.find(r => r.id === a.id).res.total
                                    - results.find(r => r.id === b.id).res.total);
-  [...current, ...rest].forEach(op => {
-    const card = document.querySelector(`.operator-card[data-op-id="${op.id}"]`);
+  return [...current, ...rest];
+}
+
+function renderOperators() {
+  const c = getC();
+  const results = ops.map(op => ({id: op.id, res: calc(c, op)}));
+  const bestId  = results.length ? results.reduce((a,b) => a.res.total < b.res.total ? a : b).id : null;
+  const currentOp = ops.find(o => o.current);
+  const refVal  = currentOp ? results.find(r => r.id === currentOp.id).res.total : null;
+
+  const container = document.getElementById('operators-container');
+  if (!ops.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🔌</div><div class="empty-text">Añade una operadora para comparar tarifas</div></div>`;
+    return;
+  }
+  container.innerHTML = '';
+
+  sortedOps(results).forEach((op, idx) => {
+    const res    = results.find(r => r.id === op.id).res;
+    const isBest = op.id === bestId && ops.length > 1;
+    const diff   = refVal !== null && !op.current ? res.total - refVal : null;
+
+    const div = document.createElement('div');
+    div.className = 'op-card' + (isBest ? ' best' : '');
+    div.dataset.opId = op.id;
+
+    div.innerHTML = `
+      <div class="op-top">
+        <div class="op-number">${idx+1}</div>
+        <input class="op-name-input" type="text" value="${op.name.replace(/"/g,'&quot;')}"
+          placeholder="Nombre operadora" oninput="updateName(${op.id},this.value)">
+        ${op.current ? '<span class="current-pill">Actual</span>' : ''}
+        ${isBest ? '<span class="best-pill">Más barata</span>' : ''}
+        <button class="del-btn" onclick="removeOperator(${op.id})">×</button>
+      </div>
+
+      <div class="price-section-label">Energía (€/kWh · IVA incl.)</div>
+      <div class="price-row">
+        <div class="price-period"><span style="background:#f87171"></span>P1</div>
+        <div class="price-input-wrap">
+          <input type="number" value="${f4(op.ep1)}" step="0.0001" min="0" inputmode="decimal"
+            oninput="updatePrice(${op.id},'ep1',this.value)">
+          <span class="price-unit">€/kWh</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-period"><span style="background:#fbbf24"></span>P2</div>
+        <div class="price-input-wrap">
+          <input type="number" value="${f4(op.ep2)}" step="0.0001" min="0" inputmode="decimal"
+            oninput="updatePrice(${op.id},'ep2',this.value)">
+          <span class="price-unit">€/kWh</span>
+        </div>
+      </div>
+      <div class="price-row" style="border-bottom:0.5px solid var(--line2)">
+        <div class="price-period"><span style="background:#4ade80"></span>P3</div>
+        <div class="price-input-wrap">
+          <input type="number" value="${f4(op.ep3)}" step="0.0001" min="0" inputmode="decimal"
+            oninput="updatePrice(${op.id},'ep3',this.value)">
+          <span class="price-unit">€/kWh</span>
+        </div>
+      </div>
+
+      <div class="price-section-label">Potencia (€/kW·día · IVA incl.)</div>
+      <div class="price-row">
+        <div class="price-period">P1</div>
+        <div class="price-input-wrap">
+          <input type="number" value="${f4(op.pp1)}" step="0.0001" min="0" inputmode="decimal"
+            oninput="updatePrice(${op.id},'pp1',this.value)">
+          <span class="price-unit">€/kW·día</span>
+        </div>
+      </div>
+      <div class="price-row">
+        <div class="price-period">P2</div>
+        <div class="price-input-wrap">
+          <input type="number" value="${f4(op.pp2)}" step="0.0001" min="0" inputmode="decimal"
+            oninput="updatePrice(${op.id},'pp2',this.value)">
+          <span class="price-unit">€/kW·día</span>
+        </div>
+      </div>
+
+      <div class="op-total">
+        <div class="op-total-left">
+          Total estimado
+          <div class="detail">Energía ${f2(res.energia)} € + Potencia ${f2(res.potencia)} €</div>
+        </div>
+        <div class="op-total-right">
+          <div class="op-total-val">${f2(res.total)} €</div>
+          ${diff !== null
+            ? `<div class="op-diff ${diff < 0 ? 'pos' : 'neg'}">${diff < 0 ? '▼ ' : '▲ +'}${f2(diff)} € vs. actual</div>`
+            : ''}
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ── Operators: in-place update (preserves focus + re-sorts DOM nodes) ─────────
+
+function updateResults() {
+  const c = getC();
+  const results = ops.map(op => ({id: op.id, res: calc(c, op)}));
+  const bestId  = results.length ? results.reduce((a,b) => a.res.total < b.res.total ? a : b).id : null;
+  const currentOp = ops.find(o => o.current);
+  const refVal  = currentOp ? results.find(r => r.id === currentOp.id).res.total : null;
+
+  // Re-sort DOM nodes without rebuilding them
+  const focused = document.activeElement;
+  const container = document.getElementById('operators-container');
+  sortedOps(results).forEach((op, idx) => {
+    const card = container.querySelector(`.op-card[data-op-id="${op.id}"]`);
     if (card) container.appendChild(card);
   });
   if (focused && focused !== document.activeElement) focused.focus();
 
+  // Update each card's result section in-place
   ops.forEach(op => {
-    const card = document.querySelector(`.operator-card[data-op-id="${op.id}"]`);
+    const card = container.querySelector(`.op-card[data-op-id="${op.id}"]`);
     if (!card) return;
     const res    = results.find(r => r.id === op.id).res;
     const isBest = op.id === bestId && ops.length > 1;
     const diff   = refVal !== null && !op.current ? res.total - refVal : null;
 
-    card.className = 'operator-card' + (isBest ? ' best-card' : '');
+    // Class + number bubble
+    card.className = 'op-card' + (isBest ? ' best' : '');
+    const sortedList = sortedOps(results);
+    const idx = sortedList.findIndex(o => o.id === op.id);
+    card.querySelector('.op-number').textContent = idx + 1;
 
-    // Badge "Más barata"
-    let badge = card.querySelector('.best-badge');
-    if (isBest && !badge) {
-      badge = document.createElement('span');
-      badge.className = 'best-badge';
-      badge.textContent = 'Más barata';
-      card.querySelector('.op-header').insertBefore(badge, card.querySelector('.del-btn'));
-    } else if (!isBest && badge) {
-      badge.remove();
+    // Badges
+    const top = card.querySelector('.op-top');
+    let bestPill = top.querySelector('.best-pill');
+    if (isBest && !bestPill) {
+      bestPill = document.createElement('span');
+      bestPill.className = 'best-pill';
+      bestPill.textContent = 'Más barata';
+      top.insertBefore(bestPill, top.querySelector('.del-btn'));
+    } else if (!isBest && bestPill) {
+      bestPill.remove();
     }
 
-    // Detail breakdown
-    card.querySelector('.op-detail').innerHTML = `
-      <span class="detail-block">P1 ${fmt(res.e_p1)} €</span>
-      <span class="detail-block">+ P2 ${fmt(res.e_p2)} €</span>
-      <span class="detail-block">+ P3 ${fmt(res.e_p3)} €</span>
-      <span class="detail-block">= <strong>${fmt(res.energia)} €</strong></span>
-      &nbsp;&nbsp;
-      <span class="detail-block">Pot P1 ${fmt(res.pot1)} €</span>
-      <span class="detail-block">+ P2 ${fmt(res.pot2)} €</span>
-      <span class="detail-block">= <strong>${fmt(res.potencia)} €</strong></span>`;
-
-    // Total
+    // Detail + total
+    card.querySelector('.op-total-left .detail').textContent =
+      `Energía ${f2(res.energia)} € + Potencia ${f2(res.potencia)} €`;
     const totalVal = card.querySelector('.op-total-val');
-    totalVal.textContent = fmt(res.total) + ' €';
-    totalVal.style.color = isBest ? 'var(--best-total)' : 'var(--text-primary)';
+    totalVal.textContent = f2(res.total) + ' €';
 
-    // Savings vs. primera
-    let savingEl = card.querySelector('.op-saving');
+    // Diff vs. actual
+    let diffEl = card.querySelector('.op-diff');
     if (diff !== null) {
-      if (!savingEl) {
-        savingEl = document.createElement('div');
-        savingEl.className = 'op-saving';
-        totalVal.parentElement.appendChild(savingEl);
+      if (!diffEl) {
+        diffEl = document.createElement('div');
+        diffEl.className = 'op-diff';
+        totalVal.parentElement.appendChild(diffEl);
       }
-      savingEl.style.color = diff > 0 ? 'var(--red-text)' : 'var(--green-text)';
-      savingEl.textContent = (diff > 0 ? '▲ +' : '▼ ') + fmt(diff) + ' € vs. primera';
-    } else if (savingEl) {
-      savingEl.remove();
+      diffEl.className = 'op-diff ' + (diff < 0 ? 'pos' : 'neg');
+      diffEl.textContent = (diff < 0 ? '▼ ' : '▲ +') + f2(diff) + ' € vs. actual';
+    } else if (diffEl) {
+      diffEl.remove();
     }
   });
 }
 
-function updatePrice(id, field, val) {
-  const op = ops.find(o => o.id === id);
-  if (!op) return;
-  op[field] = parseFloat(val) || 0;
-  updateResults(); // in-place — preserves focus and cursor
-  scheduleSave();
-}
+// ── Summary ───────────────────────────────────────────────────────────────────
 
-// Full DOM rebuild — called on add / remove / consumption change
-function renderOperators() {
-  const c = getConsumption();
-  const results = ops.map(op => ({ id: op.id, res: calcTotal(c, op) }));
-  const bestId  = results.length ? results.reduce((a, b) => a.res.total < b.res.total ? a : b).id : null;
+function renderSummary() {
+  const c = getC();
+  const container = document.getElementById('summary-container');
 
-  const current = ops.filter(o => o.current);
-  const rest    = ops.filter(o => !o.current)
-                     .slice()
-                     .sort((a, b) => results.find(r => r.id === a.id).res.total
-                                   - results.find(r => r.id === b.id).res.total);
-  const sorted  = [...current, ...rest];
-  const refVal  = current.length ? results.find(r => r.id === current[0].id).res.total : null;
+  if (!ops.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Añade operadoras en la pestaña anterior para ver el ranking</div></div>`;
+    return;
+  }
 
-  const container = document.getElementById('operators-container');
+  const results = ops
+    .map(op => ({op, res: calc(c, op)}))
+    .sort((a, b) => a.res.total - b.res.total);
+
+  const best  = results[0].res.total;
+  const colors = ['#7c6dfa','#4ade80','#fbbf24','#60a5fa','#f87171'];
+
   container.innerHTML = '';
+  const card = document.createElement('div');
+  card.className = 'summary-card';
 
-  sorted.forEach(op => {
-    const res    = results.find(r => r.id === op.id).res;
-    const isBest = op.id === bestId && ops.length > 1;
-    const diff   = refVal !== null && !op.current ? res.total - refVal : null;
+  results.forEach(({op, res}, i) => {
+    const diff    = res.total - best;
+    const isFirst = i === 0;
+    const color   = colors[i] || '#8a8a94';
 
-    const card = document.createElement('div');
-    card.className = 'operator-card' + (isBest ? ' best-card' : '');
-    card.dataset.opId = op.id;
-
-    card.innerHTML = `
-      <div class="op-header">
-        <input class="op-name-input" type="text" value="${op.name.replace(/"/g,'&quot;')}"
-          placeholder="Nombre operadora" oninput="updateName(${op.id}, this.value)">
-        ${op.current ? '<span class="current-badge">Actual</span>' : ''}
-        ${isBest ? '<span class="best-badge">Más barata</span>' : ''}
-        <button class="del-btn" onclick="removeOperator(${op.id})" title="Eliminar">
-          <i class="ti ti-x"></i>
-        </button>
+    const row = document.createElement('div');
+    row.className = 'summary-row';
+    row.innerHTML = `
+      <span class="rank-dot" style="background:${color}22;color:${color}">${i+1}</span>
+      <div class="summary-name">
+        ${op.name}
+        <small>Energía ${f2(res.energia)} € + Pot. ${f2(res.potencia)} €</small>
       </div>
-
-      <div class="sublabel">Energía (€/kWh · IVA incluido)</div>
-      <div class="prices-energy">
-        <div class="subfield"><label>Punta P1</label>
-          <input type="number" value="${fmtE(op.ep1)}" step="0.0001" min="0" inputmode="decimal"
-            oninput="updatePrice(${op.id},'ep1',this.value)"></div>
-        <div class="subfield"><label>Llano P2</label>
-          <input type="number" value="${fmtE(op.ep2)}" step="0.0001" min="0" inputmode="decimal"
-            oninput="updatePrice(${op.id},'ep2',this.value)"></div>
-        <div class="subfield"><label>Valle P3</label>
-          <input type="number" value="${fmtE(op.ep3)}" step="0.0001" min="0" inputmode="decimal"
-            oninput="updatePrice(${op.id},'ep3',this.value)"></div>
+      <div class="summary-right">
+        <div class="summary-total" style="color:${isFirst ? color : 'var(--txt)'}">${f2(res.total)} €</div>
+        ${!isFirst
+          ? `<div class="summary-diff" style="color:var(--red)">+${f2(diff)} €/mes</div>`
+          : `<div class="summary-diff" style="color:var(--green)">Más económica</div>`}
       </div>
+    `;
+    card.appendChild(row);
+  });
+  container.appendChild(card);
 
-      <div class="sublabel">Potencia (€/kW·día)</div>
-      <div class="prices-power">
-        <div class="subfield"><label>Pot P1</label>
-          <input type="number" value="${fmtE(op.pp1)}" step="0.0001" min="0" inputmode="decimal"
-            oninput="updatePrice(${op.id},'pp1',this.value)"></div>
-        <div class="subfield"><label>Pot P2</label>
-          <input type="number" value="${fmtE(op.pp2)}" step="0.0001" min="0" inputmode="decimal"
-            oninput="updatePrice(${op.id},'pp2',this.value)"></div>
-      </div>
-
-      <div class="op-detail">
-        <span class="detail-block">P1 ${fmt(res.e_p1)} €</span>
-        <span class="detail-block">+ P2 ${fmt(res.e_p2)} €</span>
-        <span class="detail-block">+ P3 ${fmt(res.e_p3)} €</span>
-        <span class="detail-block">= <strong>${fmt(res.energia)} €</strong></span>
-        &nbsp;&nbsp;
-        <span class="detail-block">Pot P1 ${fmt(res.pot1)} €</span>
-        <span class="detail-block">+ P2 ${fmt(res.pot2)} €</span>
-        <span class="detail-block">= <strong>${fmt(res.potencia)} €</strong></span>
-      </div>
-
-      <div class="op-total">
-        <span class="op-total-label">Total estimado</span>
+  if (results.length >= 2) {
+    const savingMonth = results[results.length-1].res.total - best;
+    const infoCard = document.createElement('div');
+    infoCard.className = 'card';
+    infoCard.innerHTML = `
+      <div class="card-title">Diferencia máxima</div>
+      <div class="input-row" style="border:none;padding:8px 0 0;">
+        <div class="input-label">Entre la más cara y la más barata</div>
         <div style="text-align:right;">
-          <div class="op-total-val" style="color:${isBest ? 'var(--best-total)' : 'var(--text-primary)'}">
-            ${fmt(res.total)} €
-          </div>
-          ${diff !== null
-            ? `<div class="op-saving" style="color:${diff > 0 ? 'var(--red-text)' : 'var(--green-text)'}">
-                ${diff > 0 ? '▲ +' : '▼ '}${fmt(diff)} € vs. primera
-               </div>`
-            : ''}
+          <div style="font-size:18px;font-weight:600;color:var(--green)">+${f2(savingMonth)} €/mes</div>
+          <div style="font-size:12px;color:var(--txt2);margin-top:2px;">${f2(savingMonth*12)} €/año</div>
         </div>
       </div>
     `;
-    container.appendChild(card);
-  });
-}
-
-['kwh_p1','kwh_p2','kwh_p3','pot_p1','pot_p2','dias'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    renderOperators();
-    scheduleSave();
-  });
-});
-
-// ── Theme ─────────────────────────────────────────────────────────────────────
-
-(function() {
-  const stored = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const isDark = stored ? stored === 'dark' : prefersDark;
-  if (isDark) document.documentElement.classList.add('dark');
-  else document.documentElement.classList.add('light');
-  updateThemeIcon(isDark);
-})();
-
-function updateThemeIcon(isDark) {
-  const icon = document.getElementById('theme-icon');
-  if (!icon) return;
-  icon.className = isDark ? 'ti ti-sun' : 'ti ti-moon';
-}
-
-function toggleTheme() {
-  const isDark = document.documentElement.classList.toggle('dark');
-  document.documentElement.classList.toggle('light', !isDark);
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  updateThemeIcon(isDark);
+    container.appendChild(infoCard);
+  }
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
